@@ -259,7 +259,7 @@ const SCENES = {
         !firedEvents.has('silbido') &&
         firedEvents.has('lobizón-resuelto')
       ) {
-        setTimeout(() => triggerEventSilbido(), 900);
+        setTimeout(() => triggerEventSilbido(), 1500);
         return;
       }
 

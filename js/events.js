@@ -413,12 +413,14 @@ function triggerEventSilbido() {
 }
 
 function mostrarPerroNoche() {
-  // Mismo perro, ahora oscurecido — ya está mirando al bosque al llegar.
-  // La elección previa (silbar / no silbar en la tarde) NO afecta su aparición.
-  // Siempre está acá. Lo que cambia es lo que pasa después.
-  addSprite('sprite-perro-noche', 'assets/sprites/per-01-perro.png', {
-    bottom: '18%', right: '28%', height: '180px', position: 'absolute',
-    filter: 'brightness(0.45) contrast(1.4) saturate(0.6)'
+  // Limpiar sprite del perro de tarde si quedó
+  removeSprite('sprite-perro');
+
+  // Perro oscurecido mirando al bosque
+  addSprite('sprite-perro-noche', 'assets/sprites/per-05-perro-noche.png', {
+    bottom: '15%', left: '55%', height: '190px', position: 'absolute',
+    filter: 'brightness(0.45) contrast(1.4) saturate(0.6)',
+    zIndex: '10'
   });
 
   showDialogue(['Ahí está... pero está mirando al bosque. No se mueve.'], () => {
