@@ -252,27 +252,7 @@ const SCENES = {
     onEnter: () => {
       showArrows(true, true);
 
-      // ── E3 (silbido) ─────────────────────────────────────
-      // Mismo patrón que E1 en el pasillo:
-      // cambiamos el fondo a noche ANTES de llamar al trigger,
-      // limpiamos el perro de día, y dejamos que el evento tome control.
-      if (
-        gameState.clockHour >= 19 &&
-        !firedEvents.has('silbido') &&
-        firedEvents.has('lobizón-resuelto')
-      ) {
-        // Fondo nocturno antes de que el jugador vea nada de día
-        sceneBg.style.background = 'linear-gradient(to bottom, #0a0418 0%, #100828 50%, #060e08 100%)';
-        try { sceneBg.style.backgroundImage = "url('assets/backgrounds/ext-03-patio-noche.jpg')"; } catch(e) {}
-        // Limpiar el perro de día y su hotspot por si quedaron de una escena anterior
-        removeSprite('sprite-perro');
-        setTimeout(() => removeHotspot('perro-hotspot'), 50);
-        setTimeout(() => triggerEventSilbido(), 700);
-        return; // el evento toma control — no mostrar estado de día
-      }
-
       // ── E4 (luz mala) ────────────────────────────────────
-      // Mismo patrón — se dispara al entrar al exterior de noche avanzada.
       if (
         gameState.clockHour >= 22.5 &&
         !firedEvents.has('luz-mala') &&

@@ -311,12 +311,15 @@ function resolveEventLobizonA() {
                                 'Ya lo recuerdo.',
                                 'Esa tarde en el bosque.',
                               ], () => {
-                                // Motivar al jugador a salir — el E3 se dispara al llegar al exterior
                                 showDialogue([
                                   '...',
-                                  'Ya es tarde. Mejor salgo a ver cómo está todo afuera.',
+                                  'Ya es tarde.',
+                                  'Mejor salgo a ver cómo está todo afuera.',
                                   'Hace rato que no veo al perro.',
-                                ]);
+                                ], () => {
+                                  // Igual que E1: el evento fuerza la escena directamente
+                                  triggerEventSilbido();
+                                });
                               });
                             };
                             openNotebook();
@@ -372,8 +375,8 @@ function resolveEventLobizonB() {
           ], () => {
             removeSprite('sprite-zorro');
             sceneBg.style.filter = '';
-            // Al llegar al exterior, onEnter detecta clockHour >= 19 y dispara E3
-            goToScene('exterior', 400);
+            // Igual que E1: el evento fuerza la escena directamente
+            triggerEventSilbido();
           });
         }, 800);
       });
@@ -390,14 +393,25 @@ function resolveEventLobizonB() {
 // ══════════════════════════════════════════════════════
 function triggerEventSilbido() {
   firedEvents.add('silbido');
-  // El fondo nocturno ya se aplicó en exterior.onEnter antes de llamar acá.
-  // Solo manejamos el hilo narrativo.
+
+  // Mismo patrón que E1: forzamos la escena directamente.
+  // Cambiamos el fondo a noche antes del goToScene para que
+  // el fade de entrada ya muestre el exterior nocturno.
+  sceneBg.style.background = 'linear-gradient(to bottom, #0a0418 0%, #100828 50%, #060e08 100%)';
+  goToScene('exterior', 400);
+
   setTimeout(() => {
-    showDialogueLocked([
-      'Hace rato que no veo al perro.',
-      '¿Estará por acá?',
-    ], () => mostrarPerroNoche());
-  }, 300);
+    // Fondo nocturno explícito por si el goToScene lo resetea
+    sceneBg.style.background = 'linear-gradient(to bottom, #0a0418 0%, #100828 50%, #060e08 100%)';
+    try { sceneBg.style.backgroundImage = "url('assets/backgrounds/ext-03-patio-noche.jpg')"; } catch(e) {}
+
+    showEventAlert(() => {
+      showDialogueLocked([
+        'Hace rato que no veo al perro.',
+        '¿Estará por acá?',
+      ], () => mostrarPerroNoche());
+    });
+  }, 600);
 }
 
 function mostrarPerroNoche() {
