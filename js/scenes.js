@@ -252,16 +252,15 @@ const SCENES = {
         ]);
       }
 
-      // E3 (silbido): se dispara al entrar al exterior de noche —
-      // el personaje menciona que no vio al perro, dando el argumento narrativo.
-      // NO fuerza goToScene — el jugador ya está acá.
+      // E3 (silbido): se dispara al entrar al exterior de noche.
+      // Chequea 'lobizón-resuelto' — flag que ambas ramas del E2 garantizan.
       if (
         gameState.clockHour >= 19 &&
         !firedEvents.has('silbido') &&
-        firedEvents.has('lobizón')
+        firedEvents.has('lobizón-resuelto')
       ) {
         setTimeout(() => triggerEventSilbido(), 900);
-        return; // No seguir con checkEventTriggers si vamos a disparar E3
+        return;
       }
 
       // E4 (luz mala): mismo patrón
@@ -289,7 +288,6 @@ const SCENES = {
         markInteractionDone('gallinero-entered');
         showDialogueLocked(['El gallinero... sigue igual de caótico.']);
       }
-      setTimeout(() => checkEventTriggers(), 900);
     }
   },
 
@@ -417,6 +415,12 @@ function goToScene(sceneId, fadeTime = 400) {
     if (typeof showClock === 'function') showClock();
 
     if (typeof scene.onEnter === 'function') scene.onEnter();
+
+    // Verificar triggers de eventos en cada cambio de escena.
+    // Después de onEnter para que sus flags ya estén seteados.
+    setTimeout(() => {
+      if (typeof checkEventTriggers === 'function') checkEventTriggers();
+    }, 1000);
 
   }, fadeTime);
 }

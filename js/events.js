@@ -6,15 +6,22 @@ const eventAlert = document.getElementById('event-alert');
 const firedEvents = new Set();
 
 // ── Verificar triggers por hora ──────────────────────────
+// Se llama automáticamente desde goToScene en cada cambio de escena.
 // E1 (duende):   onEnter del pasillo — basado en flag bosque-visited
 // E2 (lobizón):  onEnter del bosque-entrada — basado en reloj >= 16.5
-// E3 (silbido):  onEnter del exterior — basado en reloj >= 19 + E2 fired
+// E3 (silbido):  onEnter del exterior — basado en reloj >= 19 + E2 resuelto
 // E4 (luz mala): aquí — basado en reloj >= 22.5 + E3 fired + escena cercana
 function checkEventTriggers() {
   const h = gameState.clockHour;
-  if (h >= 22.5 && !firedEvents.has('luz-mala') && firedEvents.has('silbido')) {
-    const cerca = ['exterior', 'gallinero', 'living'];
-    if (cerca.includes(gameState.currentScene)) {
+
+  // E4: luz mala
+  if (
+    h >= 22.5 &&
+    !firedEvents.has('luz-mala') &&
+    firedEvents.has('silbido')
+  ) {
+    // No disparar si E3 todavía está en progreso (el personaje aún está afuera)
+    if (firedEvents.has('silbido-resuelto') || gameState.choices['silbido']) {
       triggerEventLuzMala();
     }
   }
@@ -429,6 +436,7 @@ function mostrarPerroNoche() {
 // El recuerdo 3 empieza a rasgar la ambigüedad: insinúa que el "duende"
 // era real, y que pensar en la hermana duele — sin nombrarlo todavía.
 function resolveEventSilbidoA() {
+  gameState.choices['silbido'] = 'a';
   removeSprite('sprite-perro-noche');
 
   showDialogue(['*silbido*'], () => {
