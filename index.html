@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>No te olvides</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       CONTENEDOR PRINCIPAL DEL JUEGO
+  ═══════════════════════════════════════════ -->
+  <div id="game-wrapper">
+
+    <!-- PANTALLA: MENÚ PRINCIPAL -->
+    <div id="screen-menu" class="screen active">
+      <div class="menu-bg"></div>
+      <div class="menu-overlay"></div>
+      <h1 class="game-title">No te olvides</h1>
+      <nav class="menu-nav">
+        <button class="menu-btn" id="btn-start">Iniciar</button>
+        <button class="menu-btn locked" id="btn-memories" disabled>
+          Recuerdos <span class="lock-icon">🔒</span>
+        </button>
+        <button class="menu-btn locked" id="btn-gallery" disabled>
+          Galería <span class="lock-icon">🔒</span>
+        </button>
+        <button class="menu-btn" id="btn-credits">Créditos</button>
+      </nav>
+    </div>
+
+    <!-- PANTALLA: JUEGO PRINCIPAL -->
+    <div id="screen-game" class="screen">
+
+      <!-- Fondo (background de la escena) -->
+      <div id="scene-bg"></div>
+
+      <!-- Capa de overlay (glitch, fade, etc.) -->
+      <div id="scene-overlay"></div>
+
+      <!-- Sprites de personajes/objetos -->
+      <div id="scene-sprites"></div>
+
+      <!-- UI: Reloj analógico -->
+      <div id="clock-container">
+        <svg id="clock" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- Fondo del reloj -->
+          <circle cx="50" cy="50" r="48" fill="#1a1208" stroke="#8b6914" stroke-width="2"/>
+          <circle cx="50" cy="50" r="44" fill="none" stroke="#5a4008" stroke-width="0.5"/>
+          <!-- Marcas de horas -->
+          <g id="clock-marks"></g>
+          <!-- Números -->
+          <text x="50" y="18" text-anchor="middle" fill="#c8a84b" font-size="8" font-family="Crimson Pro">12</text>
+          <text x="84" y="54" text-anchor="middle" fill="#c8a84b" font-size="8" font-family="Crimson Pro">3</text>
+          <text x="50" y="90" text-anchor="middle" fill="#c8a84b" font-size="8" font-family="Crimson Pro">6</text>
+          <text x="16" y="54" text-anchor="middle" fill="#c8a84b" font-size="8" font-family="Crimson Pro">9</text>
+          <!-- Manecilla de horas -->
+          <line id="hand-hours" x1="50" y1="50" x2="50" y2="28"
+            stroke="#e8d4a0" stroke-width="3" stroke-linecap="round"/>
+          <!-- Manecilla de minutos -->
+          <line id="hand-minutes" x1="50" y1="50" x2="50" y2="20"
+            stroke="#e8d4a0" stroke-width="2" stroke-linecap="round"/>
+          <!-- Centro -->
+          <circle cx="50" cy="50" r="3" fill="#c8a84b"/>
+        </svg>
+      </div>
+
+      <!-- UI: Flechas de navegación -->
+      <button class="nav-arrow" id="arrow-left" aria-label="Ir a la izquierda">&#8249;</button>
+      <button class="nav-arrow" id="arrow-right" aria-label="Ir a la derecha">&#8250;</button>
+
+      <!-- UI: Caja de diálogo/pensamiento -->
+      <div id="dialogue-box" class="hidden">
+        <div id="dialogue-text"></div>
+        <div id="dialogue-cursor">▶</div>
+      </div>
+
+      <!-- UI: Burbuja de pensamiento -->
+      <div id="thought-bubble" class="hidden">
+        <div id="thought-text"></div>
+      </div>
+
+      <!-- UI: Botones de elección -->
+      <div id="choice-container" class="hidden">
+        <button class="choice-btn" id="choice-a"></button>
+        <button class="choice-btn" id="choice-b"></button>
+      </div>
+
+      <!-- UI: Objetos clickeables en escena -->
+      <div id="hotspots-container"></div>
+
+      <!-- UI: Alerta de evento (!!!) -->
+      <div id="event-alert" class="hidden">
+        <span>!</span><span>!</span><span>!</span>
+      </div>
+
+    </div>
+
+    <!-- PANTALLA: RECUERDOS (post-partida) -->
+    <div id="screen-memories" class="screen">
+      <div class="memories-bg"></div>
+      <h2 class="screen-title">Recuerdos</h2>
+      <div id="memories-grid"></div>
+      <button class="back-btn" id="btn-back-memories">← Volver</button>
+    </div>
+
+    <!-- PANTALLA: GALERÍA (post-partida) -->
+    <div id="screen-gallery" class="screen">
+      <div class="memories-bg"></div>
+      <h2 class="screen-title">Galería</h2>
+      <div id="gallery-grid"></div>
+      <button class="back-btn" id="btn-back-gallery">← Volver</button>
+    </div>
+
+    <!-- PANTALLA: CRÉDITOS -->
+    <div id="screen-credits" class="screen">
+      <div class="credits-bg"></div>
+      <div class="credits-content">
+        <h2 class="screen-title">Créditos</h2>
+        <p>Diseño y desarrollo: <em>Camila Mihalyczo</em></p>
+        <p>Ilustraciones: <em>Fátima Mihalyczo</em></p>
+        <p>Historia y guión: <em>Camila Mihalyczo</em></p>
+        <p class="credits-note">Inspirado en el folklore argentino.</p>
+      </div>
+      <button class="back-btn" id="btn-back-credits">← Volver</button>
+    </div>
+
+  </div><!-- /game-wrapper -->
+
+  <!-- Scripts -->
+  <script src="js/state.js"></script>
+  <script src="js/clock.js"></script>
+  <script src="js/dialogue.js"></script>
+  <script src="js/scenes.js"></script>
+  <script src="js/events.js"></script>
+  <script src="js/game.js"></script>
+
+</body>
+</html>
