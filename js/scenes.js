@@ -96,6 +96,23 @@ const SCENES = {
     navLeft: 'entrada', navRight: 'cocina',
     onEnter: () => {
       showArrows(true, true);
+
+      // Post-E3: fondo nocturno al despertar en el sillón del living
+      if (firedEvents.has('silbido')) {
+        sceneBg.style.background = 'linear-gradient(135deg, #0e0a1e 0%, #08060e 100%)';
+        try { sceneBg.style.backgroundImage = "url('assets/backgrounds/int-02-living-noche.jpg')"; } catch(e) {}
+      }
+
+      // E4 (luz mala): mismo patrón que E3 en exterior y E4 en gallinero
+      if (
+        gameState.clockHour >= 22.5 &&
+        !firedEvents.has('luz-mala') &&
+        firedEvents.has('silbido')
+      ) {
+        setTimeout(() => triggerEventLuzMala(), 700);
+        return;
+      }
+
       if (!isInteractionDone('living-entered')) {
         markInteractionDone('living-entered');
         showDialogueLocked([
@@ -235,7 +252,37 @@ const SCENES = {
     onEnter: () => {
       showArrows(true, true);
 
-      // Sprite del perro solo si la interacción de tarde no está completa
+      // ── E3 (silbido) ─────────────────────────────────────
+      // Mismo patrón que E1 en el pasillo:
+      // cambiamos el fondo a noche ANTES de llamar al trigger,
+      // limpiamos el perro de día, y dejamos que el evento tome control.
+      if (
+        gameState.clockHour >= 19 &&
+        !firedEvents.has('silbido') &&
+        firedEvents.has('lobizón-resuelto')
+      ) {
+        // Fondo nocturno antes de que el jugador vea nada de día
+        sceneBg.style.background = 'linear-gradient(to bottom, #0a0418 0%, #100828 50%, #060e08 100%)';
+        try { sceneBg.style.backgroundImage = "url('assets/backgrounds/ext-03-patio-noche.jpg')"; } catch(e) {}
+        // Limpiar el perro de día y su hotspot por si quedaron de una escena anterior
+        removeSprite('sprite-perro');
+        setTimeout(() => removeHotspot('perro-hotspot'), 50);
+        setTimeout(() => triggerEventSilbido(), 700);
+        return; // el evento toma control — no mostrar estado de día
+      }
+
+      // ── E4 (luz mala) ────────────────────────────────────
+      // Mismo patrón — se dispara al entrar al exterior de noche avanzada.
+      if (
+        gameState.clockHour >= 22.5 &&
+        !firedEvents.has('luz-mala') &&
+        firedEvents.has('silbido')
+      ) {
+        setTimeout(() => triggerEventLuzMala(), 700);
+        return;
+      }
+
+      // ── Estado de día / tarde normal ─────────────────────
       if (!isInteractionDone('perro-completo')) {
         addSprite('sprite-perro', 'assets/sprites/per-01-perro.png', {
           bottom: '18%', left: '48%', height: '200px', position: 'absolute'
@@ -250,27 +297,6 @@ const SCENES = {
           'Qué silencio.',
           'El campo siempre tiene ese silencio particular.'
         ]);
-      }
-
-      // E3 (silbido): se dispara al entrar al exterior de noche.
-      // Chequea 'lobizón-resuelto' — flag que ambas ramas del E2 garantizan.
-      if (
-        gameState.clockHour >= 19 &&
-        !firedEvents.has('silbido') &&
-        firedEvents.has('lobizón-resuelto')
-      ) {
-        setTimeout(() => triggerEventSilbido(), 1500);
-        return;
-      }
-
-      // E4 (luz mala): mismo patrón
-      if (
-        gameState.clockHour >= 22.5 &&
-        !firedEvents.has('luz-mala') &&
-        firedEvents.has('silbido')
-      ) {
-        setTimeout(() => triggerEventLuzMala(), 900);
-        return;
       }
     }
   },
@@ -288,6 +314,7 @@ const SCENES = {
         markInteractionDone('gallinero-entered');
         showDialogueLocked(['El gallinero... sigue igual de caótico.']);
       }
+      setTimeout(() => checkEventTriggers(), 900);
     }
   },
 
@@ -415,12 +442,6 @@ function goToScene(sceneId, fadeTime = 400) {
     if (typeof showClock === 'function') showClock();
 
     if (typeof scene.onEnter === 'function') scene.onEnter();
-
-    // Verificar triggers de eventos en cada cambio de escena.
-    // Después de onEnter para que sus flags ya estén seteados.
-    setTimeout(() => {
-      if (typeof checkEventTriggers === 'function') checkEventTriggers();
-    }, 1000);
 
   }, fadeTime);
 }

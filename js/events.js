@@ -6,22 +6,15 @@ const eventAlert = document.getElementById('event-alert');
 const firedEvents = new Set();
 
 // ── Verificar triggers por hora ──────────────────────────
-// Se llama automáticamente desde goToScene en cada cambio de escena.
 // E1 (duende):   onEnter del pasillo — basado en flag bosque-visited
 // E2 (lobizón):  onEnter del bosque-entrada — basado en reloj >= 16.5
-// E3 (silbido):  onEnter del exterior — basado en reloj >= 19 + E2 resuelto
+// E3 (silbido):  onEnter del exterior — basado en reloj >= 19 + E2 fired
 // E4 (luz mala): aquí — basado en reloj >= 22.5 + E3 fired + escena cercana
 function checkEventTriggers() {
   const h = gameState.clockHour;
-
-  // E4: luz mala
-  if (
-    h >= 22.5 &&
-    !firedEvents.has('luz-mala') &&
-    firedEvents.has('silbido')
-  ) {
-    // No disparar si E3 todavía está en progreso (el personaje aún está afuera)
-    if (firedEvents.has('silbido-resuelto') || gameState.choices['silbido']) {
+  if (h >= 22.5 && !firedEvents.has('luz-mala') && firedEvents.has('silbido')) {
+    const cerca = ['exterior', 'gallinero', 'living'];
+    if (cerca.includes(gameState.currentScene)) {
       triggerEventLuzMala();
     }
   }
@@ -397,30 +390,23 @@ function resolveEventLobizonB() {
 // ══════════════════════════════════════════════════════
 function triggerEventSilbido() {
   firedEvents.add('silbido');
-
-  // Cambiar fondos a versión atardecer/noche
-  sceneBg.style.background = 'linear-gradient(to bottom, #0a1428 0%, #142030 50%, #1a2810 100%)';
-  try { sceneBg.style.backgroundImage = "url('assets/backgrounds/ext-03-patio-noche.jpg')"; } catch(e) {}
-
+  // El fondo nocturno ya se aplicó en exterior.onEnter antes de llamar acá.
+  // Solo manejamos el hilo narrativo.
   setTimeout(() => {
-    // El personaje menciona que no vio al perro en un rato —
-    // justificación narrativa para estar afuera de noche.
-    showDialogue([
+    showDialogueLocked([
       'Hace rato que no veo al perro.',
-      'Salgo a ver si anda por ahí.',
+      '¿Estará por acá?',
     ], () => mostrarPerroNoche());
-  }, 500);
+  }, 300);
 }
 
 function mostrarPerroNoche() {
-  // Limpiar sprite del perro de tarde si quedó
-  removeSprite('sprite-perro');
-
-  // Perro oscurecido mirando al bosque
-  addSprite('sprite-perro-noche', 'assets/sprites/per-05-perro-noche.png', {
-    bottom: '15%', left: '55%', height: '190px', position: 'absolute',
-    filter: 'brightness(0.45) contrast(1.4) saturate(0.6)',
-    zIndex: '10'
+  // Mismo perro, ahora oscurecido — ya está mirando al bosque al llegar.
+  // La elección previa (silbar / no silbar en la tarde) NO afecta su aparición.
+  // Siempre está acá. Lo que cambia es lo que pasa después.
+  addSprite('sprite-perro-noche', 'assets/sprites/per-01-perro.png', {
+    bottom: '18%', right: '28%', height: '180px', position: 'absolute',
+    filter: 'brightness(0.45) contrast(1.4) saturate(0.6)'
   });
 
   showDialogue(['Ahí está... pero está mirando al bosque. No se mueve.'], () => {
@@ -438,7 +424,6 @@ function mostrarPerroNoche() {
 // El recuerdo 3 empieza a rasgar la ambigüedad: insinúa que el "duende"
 // era real, y que pensar en la hermana duele — sin nombrarlo todavía.
 function resolveEventSilbidoA() {
-  gameState.choices['silbido'] = 'a';
   removeSprite('sprite-perro-noche');
 
   showDialogue(['*silbido*'], () => {
@@ -554,17 +539,21 @@ function resolveEventSilbidoB() {
 function triggerEventLuzMala() {
   firedEvents.add('luz-mala');
 
-  // Llevar al jugador al exterior nocturno primero
-  goToScene('exterior', 400);
+  // El evento puede dispararse desde living, exterior o gallinero.
+  // Si el jugador está en el living, lo llevamos primero al exterior
+  // para que la narrativa tenga sentido (sale a ver el gallinero).
+  // Si ya está afuera, arrancamos directo.
+  const yaAfuera = ['exterior', 'gallinero'].includes(gameState.currentScene);
 
-  setTimeout(() => {
-    // El gallinero al fondo está oscuro
+  const iniciarDesdeExterior = () => {
+    sceneBg.style.background = 'linear-gradient(to bottom, #0a0418 0%, #100828 50%, #060e08 100%)';
+    try { sceneBg.style.backgroundImage = "url('assets/backgrounds/ext-03-patio-noche.jpg')"; } catch(e) {}
     sceneBg.style.filter = 'brightness(0.7) saturate(0.6)';
-    showDialogue([
+
+    showDialogueLocked([
       'Qué oscuro está el gallinero...',
       'Ah. El foco. Lo tenía que cambiar.',
     ], () => {
-      // El personaje se acerca — ir al gallinero
       goToScene('gallinero', 400);
       setTimeout(() => {
         sceneBg.style.background = 'linear-gradient(to bottom, #020408 0%, #060c14 100%)';
@@ -584,7 +573,16 @@ function triggerEventLuzMala() {
         });
       }, 500);
     });
-  }, 500);
+  };
+
+  if (yaAfuera) {
+    // Ya está en el exterior o gallinero — arranca directo
+    setTimeout(iniciarDesdeExterior, 300);
+  } else {
+    // Viene del living u otro interior — llevarlo al exterior primero
+    goToScene('exterior', 400);
+    setTimeout(iniciarDesdeExterior, 900);
+  }
 }
 
 // Rama A: cambiar el foco → CORRECTO → recuerdo 4
