@@ -98,18 +98,29 @@ const SCENES = {
       showArrows(true, true);
 
       // Post-E3: fondo nocturno al despertar en el sillón del living
-      if (firedEvents.has('silbido')) {
+      if (firedEvents.has('silbido') && !firedEvents.has('luz-mala')) {
         sceneBg.style.background = 'linear-gradient(135deg, #0e0a1e 0%, #08060e 100%)';
         try { sceneBg.style.backgroundImage = "url('assets/backgrounds/int-02-living-noche.jpg')"; } catch(e) {}
-      }
 
-      // E4 (luz mala): mismo patrón que E3 en exterior y E4 en gallinero
-      if (
-        gameState.clockHour >= 22.5 &&
-        !firedEvents.has('luz-mala') &&
-        firedEvents.has('silbido')
-      ) {
-        setTimeout(() => triggerEventLuzMala(), 700);
+        // Recordatorio narrativo: motivar al jugador a ir al gallinero.
+        // Es el equivalente al "forzar ir al bosque" del E2 — pero en diálogo,
+        // no forzando la escena. El jugador camina solo.
+        if (!isInteractionDone('living-recordatorio-gallinero')) {
+          markInteractionDone('living-recordatorio-gallinero');
+          setTimeout(() => {
+            showThought('...', 800);
+            setTimeout(() => {
+              showDialogue([
+                '...',
+                'Qué hora es.',
+                '...',
+                'El foco del gallinero.',
+                'Todavía no lo cambié.',
+                'Si lo dejo así toda la noche...',
+              ]);
+            }, 900);
+          }, 400);
+        }
         return;
       }
 
@@ -252,17 +263,14 @@ const SCENES = {
     onEnter: () => {
       showArrows(true, true);
 
-      // ── E4 (luz mala) ────────────────────────────────────
-      if (
-        gameState.clockHour >= 22.5 &&
-        !firedEvents.has('luz-mala') &&
-        firedEvents.has('silbido')
-      ) {
-        setTimeout(() => triggerEventLuzMala(), 700);
+      // E3 (silbido): se dispara al salir al exterior cuando E2 ya ocurrió
+      if (!firedEvents.has('silbido') && firedEvents.has('lobizón')) {
+        setClockTo(19);
+        setTimeout(() => triggerEventSilbido(), 900);
         return;
       }
 
-      // ── Estado de día / tarde normal ─────────────────────
+      // Estado normal de día/tarde
       if (!isInteractionDone('perro-completo')) {
         addSprite('sprite-perro', 'assets/sprites/per-01-perro.png', {
           bottom: '18%', left: '48%', height: '200px', position: 'absolute'
@@ -286,15 +294,33 @@ const SCENES = {
   'gallinero': {
     bg: 'assets/backgrounds/ext-04-gallinero-dia.jpg',
     bgColor: 'linear-gradient(to bottom, #87ceeb 0%, #7ab050 40%, #4a7020 100%)',
-    hotspots: [],
+    hotspots: [
+      {
+        // El gallinero mismo es clickeable post-E3 — igual que las trampas en E2.
+        // El jugador llega, hace click en el gallinero, y arranca el evento.
+        id: 'gallinero-foco',
+        x: '20%', y: '15%', w: '60%', h: '70%', label: 'Gallinero',
+        onInteract: () => {
+          // Solo activo si E3 (silbido) ocurrió y E4 todavía no
+          if (!firedEvents.has('silbido') || firedEvents.has('luz-mala')) return;
+          triggerEventLuzMala();
+        }
+      }
+    ],
     navLeft: 'exterior', navRight: 'bosque-entrada',
     onEnter: () => {
       showArrows(true, true);
+
+      // Post-E3: fondo nocturno del gallinero
+      if (firedEvents.has('silbido') && !firedEvents.has('luz-mala')) {
+        sceneBg.style.background = 'linear-gradient(to bottom, #020408 0%, #060c14 100%)';
+        try { sceneBg.style.backgroundImage = "url('assets/backgrounds/ext-04-gallinero-noche-oscuro.jpg')"; } catch(e) {}
+      }
+
       if (!isInteractionDone('gallinero-entered')) {
         markInteractionDone('gallinero-entered');
         showDialogueLocked(['El gallinero... sigue igual de caótico.']);
       }
-      setTimeout(() => checkEventTriggers(), 900);
     }
   },
 

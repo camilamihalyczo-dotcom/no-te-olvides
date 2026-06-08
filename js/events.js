@@ -5,20 +5,11 @@
 const eventAlert = document.getElementById('event-alert');
 const firedEvents = new Set();
 
-// ── Verificar triggers por hora ──────────────────────────
-// E1 (duende):   onEnter del pasillo — basado en flag bosque-visited
-// E2 (lobizón):  onEnter del bosque-entrada — basado en reloj >= 16.5
-// E3 (silbido):  onEnter del exterior — basado en reloj >= 19 + E2 fired
-// E4 (luz mala): aquí — basado en reloj >= 22.5 + E3 fired + escena cercana
-function checkEventTriggers() {
-  const h = gameState.clockHour;
-  if (h >= 22.5 && !firedEvents.has('luz-mala') && firedEvents.has('silbido')) {
-    const cerca = ['exterior', 'gallinero', 'living'];
-    if (cerca.includes(gameState.currentScene)) {
-      triggerEventLuzMala();
-    }
-  }
-}
+// El reloj sigue a los eventos, no al revés.
+// Todos los disparos están en el onEnter de cada escena:
+//   E1 → pasillo    E2 → bosque-entrada
+//   E3 → exterior   E4 → gallinero (click en el gallinero)
+function checkEventTriggers() {}
 
 // ── Alerta !!! ───────────────────────────────────────────
 function showEventAlert(callback, duration = 1800) {
@@ -552,51 +543,26 @@ function resolveEventSilbidoB() {
 // ══════════════════════════════════════════════════════
 function triggerEventLuzMala() {
   firedEvents.add('luz-mala');
+  setClockTo(22.5);
 
-  // El evento puede dispararse desde living, exterior o gallinero.
-  // Si el jugador está en el living, lo llevamos primero al exterior
-  // para que la narrativa tenga sentido (sale a ver el gallinero).
-  // Si ya está afuera, arrancamos directo.
-  const yaAfuera = ['exterior', 'gallinero'].includes(gameState.currentScene);
+  // El jugador ya está en el gallinero — llegó por su cuenta
+  // después del recordatorio en el living. Arrancamos directo.
+  sceneBg.style.background = 'linear-gradient(to bottom, #020408 0%, #060c14 100%)';
+  try { sceneBg.style.backgroundImage = "url('assets/backgrounds/ext-04-gallinero-noche-oscuro.jpg')"; } catch(e) {}
+  sceneBg.style.filter = '';
+  hideArrows();
 
-  const iniciarDesdeExterior = () => {
-    sceneBg.style.background = 'linear-gradient(to bottom, #0a0418 0%, #100828 50%, #060e08 100%)';
-    try { sceneBg.style.backgroundImage = "url('assets/backgrounds/ext-03-patio-noche.jpg')"; } catch(e) {}
-    sceneBg.style.filter = 'brightness(0.7) saturate(0.6)';
-
-    showDialogueLocked([
-      'Qué oscuro está el gallinero...',
-      'Ah. El foco. Lo tenía que cambiar.',
+  showEventAlert(() => {
+    showDialogue([
+      'El foco está fundido.',
+      'Si lo dejo así esta noche...',
     ], () => {
-      goToScene('gallinero', 400);
-      setTimeout(() => {
-        sceneBg.style.background = 'linear-gradient(to bottom, #020408 0%, #060c14 100%)';
-        try { sceneBg.style.backgroundImage = "url('assets/backgrounds/ext-04-gallinero-noche-oscuro.jpg')"; } catch(e) {}
-        sceneBg.style.filter = '';
-
-        showEventAlert(() => {
-          showDialogue([
-            'El foco está fundido.',
-            'Si lo dejo así esta noche...',
-          ], () => {
-            showChoices(
-              { text: 'Cambiar el foco ahora',            callback: resolveEventLuzMalaA },
-              { text: 'Irse a dormir, ya lo hago mañana', callback: resolveEventLuzMalaB }
-            );
-          });
-        });
-      }, 500);
+      showChoices(
+        { text: 'Cambiar el foco ahora',            callback: resolveEventLuzMalaA },
+        { text: 'Irse a dormir, ya lo hago mañana', callback: resolveEventLuzMalaB }
+      );
     });
-  };
-
-  if (yaAfuera) {
-    // Ya está en el exterior o gallinero — arranca directo
-    setTimeout(iniciarDesdeExterior, 300);
-  } else {
-    // Viene del living u otro interior — llevarlo al exterior primero
-    goToScene('exterior', 400);
-    setTimeout(iniciarDesdeExterior, 900);
-  }
+  });
 }
 
 // Rama A: cambiar el foco → CORRECTO → recuerdo 4
