@@ -100,7 +100,7 @@ function resolveEventDuendeA() {
               'Esperaba a que todos se fueran a dormir en la tarde',
               'para poder salir',
               'E ir a jugar con mi amigo...',
-              'el duende! Sí!',
+              'Mi amigo el duende',
               'Durante la siesta podía ir a verlo',
               'siguiendo el camino secreto',
               '....',
@@ -124,17 +124,17 @@ function resolveEventDuendeA() {
                       showDialogue([
                         'Q- ¿qué pasó? ¿Me dormí?!',
                       ], () => {
-                        showThought('Pero si yo estaba... el pollito... lo llevé al gallinero...', 3200);
+                        showThought('Pero si yo estaba... el pollito... ¿no lo llevé al gallinero?', 3200);
                         setTimeout(() => {
                           showDialogue([
                             'Fue todo... ¿un sueño?',
-                            'Estaba tan segura... pero todo fue un sueño.',
+                            'Estaba tan seguro que fue real... pero todo fue un sueño.',
                           ], () => {
                             // Cuaderno aparece en la mesita — forzar interacción
                             window._notebookOnClose = () => {
                               showMemoryText([
                                 'Ah... ya lo recuerdo.',
-                                'Esa siesta. Ese verano.',
+                                'Durante la siesta. Ese verano...',
                               ], () => {
                                 showDialogue([
                                   'Hay cosas que uno entierra sin darse cuenta.'
@@ -165,15 +165,15 @@ function resolveEventDuendeB() {
 
   // Comentario corto y redirige al jugador — que camine solo hasta la cama
   showDialogue([
-    'Ya lo llevo después... ahora necesito descansar.',
+    'No pasa nada, ya lo llevo después. Ahora necesito descansar.',
   ], () => {
     // Habilitar navegación manual hacia la habitación
     // Sobreescribir temporalmente el navRight del pasillo para que lleve a habitación
     goToScene('habitacion-abajo', 400);
     setTimeout(() => {
       showDialogue([
-        'Esta cama...', 
-        'Solo un momento.'
+        'Al fin, voy a intenrar dormir un rato... aunque no tengo sueño.', 
+        'Aunque sea solo un momento.'
       ], () => {
         // Agregar hotspot de la cama para que el jugador tenga que clickearla
         addHotspot({
@@ -192,7 +192,7 @@ function resolveEventDuendeB() {
                   setTimeout(() => {
                     showDialogue([
                       '¿Cuánto tiempo dormí...?',
-                      'El pollito. Lo dejé en el pasillo.',
+                      'Mierda, pasó mucho tiempo. Cierto, el pollito. Lo dejé en el pasillo.',
                     ], () => {
                       // El jugador va al pasillo y encuentra el pollito
                       goToScene('pasillo', 400);
@@ -205,7 +205,7 @@ function resolveEventDuendeB() {
                           transform: 'rotate(90deg)'
                         });
                         showDialogue([
-                          '...',
+                          '...no puede ser.',
                           'El calor del pasillo. No debí haberlo dejado ahí.',
                           'No debí haberlo dejado.'
                         ], () => {
@@ -240,7 +240,7 @@ function handleTrampaInteraction() {
   // Marcar el evento como disparado en la primera interacción con las trampas
   if (!firedEvents.has('lobizón')) firedEvents.add('lobizón');
 
-  showDialogue(['Las trampas están vacías... habría que ponerles algo de comida.'], () => {
+  showDialogue(['Es verdad, trampas están vacías... habría que ponerles algo de comida. Aunque vine acá a descansar.'], () => {
     showChoices(
       { text: 'Volver por la comida',   callback: resolveEventLobizonA },
       { text: 'Dejarlo para después',   callback: resolveEventLobizonB }
@@ -255,12 +255,12 @@ function resolveEventLobizonA() {
   firedEvents.add('lobizón-resuelto');
   goToScene('cocina', 400);
   setTimeout(() => {
-    showDialogue(['Acá estaba la comida para las trampas.'], () => {
+    showDialogue(['Genial, acá está la comida para las trampas.'], () => {
       goToScene('bosque-entrada', 400);
       setTimeout(() => {
         showDialogue([
           'Listo.',
-          'Ahora sí está todo en orden.',
+          'Ahora sí, ya puedo dormir más tranquilo.',
           'Aunque... qué calor hace. Me pesa todo de golpe.'
         ], () => {
 
@@ -275,6 +275,9 @@ function resolveEventLobizonA() {
               'Algo se movió entre los árboles esa tarde.',
               'Corrimos. Nos reímos.',
               'No sabíamos qué era real.',
+              'Solo sabíamos que era divertido.',
+              '...',
+              'Era real.',
             ], () => {
               playGlitch(() => {
                 unlockMemory(2);
@@ -289,7 +292,7 @@ function resolveEventLobizonA() {
                     showThought('!!!', 1000);
                     setTimeout(() => {
                       showDialogue([
-                        '¿Qué pasó...? ¿Me quedé sin querer?',
+                        '¿Qué pasó...? ¿Me quedé dormido sin querer?',
                         'Otra vez no. Esto ya es raro.',
                       ], () => {
                         showThought('Soñé con el bosque. Con cuando éramos chicos.', 3000);
@@ -300,7 +303,7 @@ function resolveEventLobizonA() {
                             window._notebookOnClose = () => {
                               showMemoryText([
                                 'Ya lo recuerdo.',
-                                'Esa tarde en el bosque.',
+                                'Esa tarde en el bosque. Como pude olvidarlo.',
                               ], () => {
                                 showDialogue([
                                   '...',
@@ -339,7 +342,7 @@ function resolveEventLobizonB() {
 
   showDialogue([
     'Ya lo haré después...',
-    'Ahora tengo otras cosas en qué pensar.'
+    'Vine a descansar, tengo que concentrarme en mejorar mi imsomnio, o al menos intentarlo.'
   ], () => {
     // Fix: avanzar suficiente para llegar a ≥19:00 antes de ir al exterior
     advanceClock(150);
@@ -361,8 +364,8 @@ function resolveEventLobizonB() {
           showDialogue([
             '¡El gallinero!',
             '...',
-            'El zorro entró. Las trampas estaban vacías.',
-            'Si hubiera puesto la comida antes...',
+            'Pero la pu... ¡Si estaba acá al lado! El zorro entró. Simpre me sale todo para la mierda.',
+            'Si hubiera puesto la comida antes... es mi culpa.',
           ], () => {
             removeSprite('sprite-zorro');
             sceneBg.style.filter = '';
@@ -398,7 +401,7 @@ function triggerEventSilbido() {
 
     showEventAlert(() => {
       showDialogueLocked([
-        'Hace rato que no veo al perro.',
+        'Ya se hizo tarde.Hace rato que no veo al perro.',
         '¿Estará por acá?',
       ], () => mostrarPerroNoche());
     });
@@ -414,7 +417,7 @@ function mostrarPerroNoche() {
     filter: 'brightness(0.45) contrast(1.4) saturate(0.6)'
   });
 
-  showDialogue(['Ahí está... pero está mirando al bosque. No se mueve.'], () => {
+  showDialogue(['Ahí está... pero... ¿está mirando hacia al bosque?. No se mueve. Ya me esta dando miedo.'], () => {
     showChoices(
       { text: 'Silbarle',   callback: resolveEventSilbidoA },
       { text: 'Dejarlo ir', callback: resolveEventSilbidoB }
@@ -438,7 +441,7 @@ function resolveEventSilbidoA() {
         bottom: '18%', right: '28%', height: '180px', position: 'absolute',
         filter: 'brightness(0.6) contrast(1.2)'
       });
-      showDialogue(['Volvió corriendo.', 'Bien.', '...', 'Qué noche más rara.'], () => {
+      showDialogue(['Que bien.Volvió corriendo.', '¿Qué estabas viendo eh?', '...', 'Qué noche más rara.'], () => {
         removeSprite('sprite-perro-noche');
 
         playGlitch(() => {
@@ -450,14 +453,17 @@ function resolveEventSilbidoA() {
           // Empieza a insinuar que era una persona real.
           // Pensar en la hermana duele — pero no se nombra directamente.
           showMemoryText([
-            'De noche el campo es diferente.',
-            'Esperaba ese silbido.',
+            'De noche el campo siempre es diferente.',
+            'Por algo se dice que no hay que silbar en la noche...',
+            'Pero yo silbaba igual.',
+            'Y él lo respondía. Siempre respondía.',
             'Salía a encontrarme con él aunque sabía que no debía.',
-            'Me llevaba al claro. Siempre el mismo camino.',
-            'Las luciérnagas.',
+            'Hacia el claro. Siempre el mismo camino.',
+            '¿Cómo era ese camino?',
+            'Habia luciérnagas...',
             '...',
             'Creía que era magia.',
-            'Creía muchas cosas.',
+            'Antes creía en muchas cosas.',
             '...',
             'Mi hermana nunca quiso venir.',
             'Ahora entiendo por qué.',
@@ -479,23 +485,35 @@ function resolveEventSilbidoA() {
                       '¿Qué...? ¿Estoy en el living?',
                       'No recuerdo haberme sentado acá.',
                       '...',
-                      'Esto ya es la tercera vez.',
-                      'Me quedo dormido sin darme cuenta y después...',
+                      'Esto ya me esta dando mucho miedo.',
+                      '¿Me estoy volviendo loco? Como me voy a quedar dormido sin darme cuenta...',
                       '¿Qué me está pasando?',
                     ], () => {
-                      showThought('Soñé con él otra vez. Con el bosque.', 3000);
+                      showThought('Soñé con el duendeotra vez. Con el bosque.', 3000);
                       setTimeout(() => {
                         showDialogue([
                           'Y con mi hermana.',
                           '...',
-                          'No quiero pensar en eso.'
+                          'Basta. No piense en eso.'
                         ], () => {
                           // Cuaderno forzado — igual que E1 y E2
                           window._notebookOnClose = () => {
                             showMemoryText([
                               'Ya lo recuerdo.',
-                              'Esa noche en el claro.',
-                            ]);
+                              'Es de esa noche en el claro.',
+                            ], () => {
+                              // Igual que E2 lleva al jugador al bosque:
+                              // el personaje dice que tiene que ir al gallinero
+                              // y el evento se dispara al llegar.
+                              showDialogue([
+                                '...',
+                                'El foco del gallinero.',
+                                'Todavía no lo cambié.',
+                                '¿Estará todo bien allá afuera?.',
+                              ], () => {
+                                goToScene('gallinero', 500);
+                              });
+                            });
                           };
                           openNotebook();
                         });
@@ -522,12 +540,14 @@ function resolveEventSilbidoB() {
   showDialogue([
     'Se fue hacia el bosque.',
     '...',
-    'Ya va a volver.',
+    'Ya va a volver... Espero que vuelva...',
+    '...',
+    'Cierto el foco del gallinero. Todavía no lo cambié.',
+    'Quizás debería hacerlo ya que estoy afuera. Aunque quízas está todo bien. Mejor voy a ver.',
   ], () => {
-    // Avanzar reloj a ~22:30 para que E4 pueda dispararse
     advanceClock(90);
-    // Entrar al living activa checkEventTriggers → E4
-    goToScene('living', 500);
+    // Mismo patrón que E2: llevar al jugador a la escena del evento directamente
+    goToScene('gallinero', 500);
   });
 }
 
@@ -555,7 +575,7 @@ function triggerEventLuzMala() {
   showEventAlert(() => {
     showDialogue([
       'El foco está fundido.',
-      'Si lo dejo así esta noche...',
+      '¿Y si lo dejo así esta noche?',
     ], () => {
       showChoices(
         { text: 'Cambiar el foco ahora',            callback: resolveEventLuzMalaA },
@@ -586,7 +606,7 @@ function handleFocoInteraction() {
         'Listo.',
         'Ahora sí.',
         '...',
-        'Qué silencio tiene el campo de noche.',
+        '¿Y esa luz?',
       ], () => {
 
         playGlitch(() => {
@@ -759,7 +779,7 @@ function _triggerFinalRealCabana() {
                 'A mí.',
               ], () => {
 
-                showThought('No sé cuántos años tenía. Para un pibe de diez todos los adultos son viejos.', 4000);
+                showThought('No sé cuántos años tenía. Para un nene de diez todos los adultos son viejos.', 4000);
 
                 setTimeout(() => {
                   showDialogue([
@@ -816,19 +836,19 @@ function triggerFinalIncompleto() {
     setTimeout(() => {
       showDialogue([
         'Ya es de mañana.',
-        'Qué noche rara.',
+        'Qué noche horrible.',
         '...',
         'Mejor me voy.',
         'Tengo cosas que hacer en la ciudad.',
       ], () => {
-        showThought('Soñé con cosas que no recuerdo. Como siempre.', 3200);
+        showThought('Soñé con cosas que no recuerdo. Como siempre. Casi ni dormí.', 3200);
         setTimeout(() => {
           showDialogue([
             'Abuelo, gracias por dejarme las llaves.',
             '...',
             'Sí, la próxima vengo con más tiempo.',
             '...',
-            'Hay algo que olvidé llevarme.',
+            'Siento que hay algo que olvidé llevarme.',
             'No recuerdo qué.',
           ], () => {
             markGameCompleted();
@@ -853,10 +873,11 @@ function triggerIncendio() {
       'El foco. El foco que no cambié.',
     ], () => {
       showDialogue([
-        'Los abuelos llegaron justo a tiempo.',
+        'Mis abuelos llegaron justo a tiempo.',
         'Entre todos apagamos el fuego.',
         '...',
         'No dije nada de haber olvidado el foco.',
+        '...',
         'Me fui temprano a la mañana siguiente.',
         'Sin decir mucho.',
       ], () => {
