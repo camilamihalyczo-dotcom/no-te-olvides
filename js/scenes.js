@@ -294,27 +294,20 @@ const SCENES = {
   'gallinero': {
     bg: 'assets/backgrounds/ext-04-gallinero-dia.jpg',
     bgColor: 'linear-gradient(to bottom, #87ceeb 0%, #7ab050 40%, #4a7020 100%)',
-    hotspots: [
-      {
-        // El gallinero mismo es clickeable post-E3 — igual que las trampas en E2.
-        // El jugador llega, hace click en el gallinero, y arranca el evento.
-        id: 'gallinero-foco',
-        x: '20%', y: '15%', w: '60%', h: '70%', label: 'Gallinero',
-        onInteract: () => {
-          // Solo activo si E3 (silbido) ocurrió y E4 todavía no
-          if (!firedEvents.has('silbido') || firedEvents.has('luz-mala')) return;
-          triggerEventLuzMala();
-        }
-      }
-    ],
+    hotspots: [],
     navLeft: 'exterior', navRight: 'bosque-entrada',
     onEnter: () => {
       showArrows(true, true);
 
-      // Post-E3: fondo nocturno del gallinero
+      // E4 (luz mala) — mismo patrón exacto que E2 en bosque-entrada:
+      // el jugador llega, el evento se dispara solo, sin hotspot que clickear.
       if (firedEvents.has('silbido') && !firedEvents.has('luz-mala')) {
+        // Fondo nocturno antes de que el evento tome control
         sceneBg.style.background = 'linear-gradient(to bottom, #020408 0%, #060c14 100%)';
         try { sceneBg.style.backgroundImage = "url('assets/backgrounds/ext-04-gallinero-noche-oscuro.jpg')"; } catch(e) {}
+        hideArrows();
+        setTimeout(() => triggerEventLuzMala(), 700);
+        return;
       }
 
       if (!isInteractionDone('gallinero-entered')) {
