@@ -299,10 +299,9 @@ const SCENES = {
     onEnter: () => {
       showArrows(true, true);
 
-      // E4 (luz mala) — mismo patrón exacto que E2 en bosque-entrada:
-      // el jugador llega, el evento se dispara solo, sin hotspot que clickear.
+      // E4 — mismo patrón que E2 en bosque-entrada:
+      // el jugador llega y el evento arranca solo, sin hotspot.
       if (firedEvents.has('silbido') && !firedEvents.has('luz-mala')) {
-        // Fondo nocturno antes de que el evento tome control
         sceneBg.style.background = 'linear-gradient(to bottom, #020408 0%, #060c14 100%)';
         try { sceneBg.style.backgroundImage = "url('assets/backgrounds/ext-04-gallinero-noche-oscuro.jpg')"; } catch(e) {}
         hideArrows();
