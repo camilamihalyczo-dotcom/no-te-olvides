@@ -76,7 +76,6 @@ function triggerEventDuende() {
 function resolveEventDuendeA() {
   removeSprite('sprite-pollito');
 
-  // Aparece la mano con el pollito — el personaje cree que está despierto
   addSprite('sprite-mano-pollito', 'assets/sprites/per-02-mano-pollito.png', {
     bottom: '10%', left: '3%', height: '320px', position: 'absolute'
   });
@@ -87,10 +86,8 @@ function resolveEventDuendeA() {
       showDialogue(['Listo, ya no te salgas.'], () => {
         removeSprite('sprite-mano-pollito');
 
-        // Reacción breve antes del glitch — el personaje está convencido de estar despierto
         showDialogue(['Listo. Ahora sí, a descansar un poco...'], () => {
 
-          // Glitch de entrada al recuerdo — el personaje NO sabe que está soñando
           playGlitch(() => {
             sceneBg.style.background = '#0a0808';
             try { sceneBg.style.backgroundImage = "url('assets/recuerdos/rec-01-sec-bg.jpg')"; } catch(e) {}
@@ -106,21 +103,17 @@ function resolveEventDuendeA() {
               '....',
               '¿dónde quedaba?',
             ], () => {
-              // Glitch de salida — transición al despertar
               playGlitch(() => {
                 unlockMemory(1);
 
-                // Fade a negro — salto temporal
                 fadeToBlack(() => {
-                  // Aparece en la habitación (despertó sin darse cuenta de haberse dormido)
                   goToScene('habitacion-abajo', 200);
                   setTimeout(() => {
-                    advanceClock(120); // E1: despierta ~16:00, listo para E2
+                    // Fix: setClockTo en vez de advanceClock — E1 despierta ~16:00
+                    setClockTo(16);
 
-                    // Reacción al despertar — burbuja de pensamiento (desorientado)
                     showThought('!!!', 1000);
                     setTimeout(() => {
-                      // Confusión: creía estar despierto
                       showDialogue([
                         'Q- ¿qué pasó? ¿Me dormí?!',
                       ], () => {
@@ -130,14 +123,18 @@ function resolveEventDuendeA() {
                             'Fue todo... ¿un sueño?',
                             'Estaba tan seguro que fue real... pero todo fue un sueño.',
                           ], () => {
-                            // Cuaderno aparece en la mesita — forzar interacción
+                            // Cuaderno forzado
                             window._notebookOnClose = () => {
                               showMemoryText([
                                 'Ah... ya lo recuerdo.',
                                 'Durante la siesta. Ese verano...',
                               ], () => {
                                 showDialogue([
-                                  'Hay cosas que uno entierra sin darse cuenta.'
+                                  'Hay cosas que uno entierra sin darse cuenta.',
+                                  '...',
+                                  // Fix: empuje narrativo hacia E2 — igual que E3 empuja al gallinero
+                                  'Cierto, tenía que poner comida en las trampas.',
+                                  'Mejor lo hago antes de que se haga tarde.',
                                 ]);
                               });
                             };
@@ -158,24 +155,19 @@ function resolveEventDuendeA() {
 }
 
 // Rama B: siesta → FALLO
-// El jugador puede moverse a la habitación, clickear la cama, pasa el tiempo
-// y al despertar encuentra el pollito muerto en el pasillo.
 function resolveEventDuendeB() {
   removeSprite('sprite-pollito');
 
-  // Comentario corto y redirige al jugador — que camine solo hasta la cama
   showDialogue([
     'No pasa nada, ya lo llevo después. Ahora necesito descansar.',
   ], () => {
-    // Habilitar navegación manual hacia la habitación
-    // Sobreescribir temporalmente el navRight del pasillo para que lleve a habitación
     goToScene('habitacion-abajo', 400);
     setTimeout(() => {
       showDialogue([
-        'Al fin, voy a intenrar dormir un rato... aunque no tengo sueño.', 
+        // Fix: typo "intenrar" → "intentar"
+        'Al fin, voy a intentar dormir un rato... aunque no tengo sueño.',
         'Aunque sea solo un momento.'
       ], () => {
-        // Agregar hotspot de la cama para que el jugador tenga que clickearla
         addHotspot({
           id: 'cama-siesta',
           x: '20%', y: '45%', w: '60%', h: '40%', label: 'Cama',
@@ -183,9 +175,9 @@ function resolveEventDuendeB() {
             removeHotspot('cama-siesta');
             hideArrows();
             showDialogue(['Zzz...'], () => {
-              // Fade para el paso del tiempo
               fadeToBlack(() => {
-                advanceClock(90);
+                // Fix: setClockTo en vez de advanceClock
+                setClockTo(16);
                 goToScene('habitacion-abajo', 300);
                 setTimeout(() => {
                   showThought('!!!', 900);
@@ -194,10 +186,8 @@ function resolveEventDuendeB() {
                       '¿Cuánto tiempo dormí...?',
                       'Mierda, pasó mucho tiempo. Cierto, el pollito. Lo dejé en el pasillo.',
                     ], () => {
-                      // El jugador va al pasillo y encuentra el pollito
                       goToScene('pasillo', 400);
                       setTimeout(() => {
-                        // Sprite del pollito muerto (usa el mismo, con filtro gris)
                         addSprite('sprite-pollito-muerto', 'assets/sprites/per-03-pollito.png', {
                           bottom: '24%', left: '42%', height: '75px',
                           position: 'absolute',
@@ -210,8 +200,15 @@ function resolveEventDuendeB() {
                           'No debí haberlo dejado.'
                         ], () => {
                           removeSprite('sprite-pollito-muerto');
-                          // Continúa a la Fase 4 sin desbloquear el recuerdo
                           goToScene('habitacion-abajo', 400);
+                          setTimeout(() => {
+                            // Fix: empuje narrativo hacia E2 — igual que rama A
+                            showDialogue([
+                              '...',
+                              'Tenía que poner comida en las trampas también.',
+                              'Mejor lo hago antes de que se haga tarde.',
+                            ]);
+                          }, 400);
                         });
                       }, 500);
                     });
@@ -222,7 +219,6 @@ function resolveEventDuendeB() {
           }
         });
         showThought('Solo un momento en la cama...', 2200);
-        // Mostrar flechas pero con la cama como objetivo principal
         showArrows(true, false);
       });
     }, 500);
@@ -249,8 +245,6 @@ function handleTrampaInteraction() {
 }
 
 // Rama A: poner comida → CORRECTO → recuerdo 2
-// El personaje vuelve por la comida, pone las trampas, y cae dormido igual que en el evento 1.
-// Despierta en la habitación unas horas después (~18:30 → 19:30).
 function resolveEventLobizonA() {
   firedEvents.add('lobizón-resuelto');
   goToScene('cocina', 400);
@@ -282,12 +276,11 @@ function resolveEventLobizonA() {
               playGlitch(() => {
                 unlockMemory(2);
 
-                // Mismo patrón que evento 1: fade a negro → despierta en habitación
                 fadeToBlack(() => {
                   goToScene('habitacion-abajo', 200);
                   setTimeout(() => {
-                    // E2: despierta ~19:00, listo para E3 del silbido
-                    advanceClock(150);
+                    // Fix: setClockTo en vez de advanceClock
+                    setClockTo(19);
 
                     showThought('!!!', 1000);
                     setTimeout(() => {
@@ -311,8 +304,9 @@ function resolveEventLobizonA() {
                                   'Mejor salgo a ver cómo está todo afuera.',
                                   'Hace rato que no veo al perro.',
                                 ], () => {
-                                  // Igual que E1: el evento fuerza la escena directamente
-                                  triggerEventSilbido();
+                                  // Fix: goToScene en vez de triggerEventSilbido directo.
+                                  // El onEnter del exterior detecta E2 completo y dispara E3.
+                                  setTimeout(() => goToScene('exterior', 400), 100);
                                 });
                               });
                             };
@@ -334,26 +328,25 @@ function resolveEventLobizonA() {
 }
 
 // Rama B: dejarlo para después → FALLO
-// El personaje se va, el zorro entra al gallinero.
-// La consecuencia se muestra ahora mismo (escena del gallinero con gallinas muertas)
-// antes de continuar, para que no quede en el aire.
 function resolveEventLobizonB() {
   firedEvents.add('lobizón-resuelto');
 
   showDialogue([
     'Ya lo haré después...',
-    'Vine a descansar, tengo que concentrarme en mejorar mi imsomnio, o al menos intentarlo.'
+    // Fix: typo "imsomnio" → "insomnio"
+    'Vine a descansar, tengo que concentrarme en mejorar mi insomnio, o al menos intentarlo.'
   ], () => {
-    // Fix: avanzar suficiente para llegar a ≥19:00 antes de ir al exterior
-    advanceClock(150);
     gameState.choices['lobizón'] = 'b';
 
-    goToScene('gallinero', 400);
+    // Mostrar la consecuencia en el exterior (no en el gallinero)
+    // para no rozar el onEnter del gallinero que dispara E4
+    goToScene('exterior', 400);
     setTimeout(() => {
       sceneBg.style.filter = 'brightness(0.6) saturate(0.7)';
       showDialogue([
         '...',
         'Qué silencio raro.',
+        'El gallinero está raro también...',
       ], () => {
         addSprite('sprite-zorro', 'assets/sprites/per-03-pollito.png', {
           bottom: '20%', left: '55%', height: '90px', position: 'absolute',
@@ -364,13 +357,17 @@ function resolveEventLobizonB() {
           showDialogue([
             '¡El gallinero!',
             '...',
-            'Pero la pu... ¡Si estaba acá al lado! El zorro entró. Simpre me sale todo para la mierda.',
+            // Fix: typo "Simpre" → "Siempre"
+            'Pero la pu... ¡Si estaba acá al lado! El zorro entró. Siempre me sale todo para la mierda.',
             'Si hubiera puesto la comida antes... es mi culpa.',
           ], () => {
             removeSprite('sprite-zorro');
             sceneBg.style.filter = '';
-            // Igual que E1: el evento fuerza la escena directamente
-            triggerEventSilbido();
+            // Fix: setClockTo en vez de advanceClock
+            setClockTo(19);
+            // Fix: goToScene exterior en vez de triggerEventSilbido directo.
+            // onEnter del exterior detecta lobizón-resuelto y dispara E3.
+            setTimeout(() => goToScene('exterior', 400), 100);
           });
         }, 800);
       });
@@ -388,24 +385,18 @@ function resolveEventLobizonB() {
 function triggerEventSilbido() {
   firedEvents.add('silbido');
 
-  // Mismo patrón que E1: forzamos la escena directamente.
-  // Cambiamos el fondo a noche antes del goToScene para que
-  // el fade de entrada ya muestre el exterior nocturno.
+  // El jugador ya está en el exterior — el trigger viene del onEnter.
+  // No hace falta goToScene. Solo seteamos el fondo nocturno y arrancamos.
   sceneBg.style.background = 'linear-gradient(to bottom, #0a0418 0%, #100828 50%, #060e08 100%)';
-  goToScene('exterior', 400);
+  try { sceneBg.style.backgroundImage = "url('assets/backgrounds/ext-03-patio-noche.jpg')"; } catch(e) {}
 
-  setTimeout(() => {
-    // Fondo nocturno explícito por si el goToScene lo resetea
-    sceneBg.style.background = 'linear-gradient(to bottom, #0a0418 0%, #100828 50%, #060e08 100%)';
-    try { sceneBg.style.backgroundImage = "url('assets/backgrounds/ext-03-patio-noche.jpg')"; } catch(e) {}
-
-    showEventAlert(() => {
-      showDialogueLocked([
-        'Ya se hizo tarde.Hace rato que no veo al perro.',
-        '¿Estará por acá?',
-      ], () => mostrarPerroNoche());
-    });
-  }, 600);
+  showEventAlert(() => {
+    showDialogueLocked([
+      // Fix: typo — faltaba espacio
+      'Ya se hizo tarde. Hace rato que no veo al perro.',
+      '¿Estará por acá?',
+    ], () => mostrarPerroNoche());
+  });
 }
 
 function mostrarPerroNoche() {
@@ -425,23 +416,17 @@ function mostrarPerroNoche() {
   });
 }
 
-// Rama A: silbar → CORRECTO → recuerdo 3
-// El perro vuelve. El personaje se relaja. Cae dormido de nuevo
-// (igual que E1 y E2 — el patrón ya es reconocible para el jugador).
-// Despierta en el living, desorientado. Cuaderno forzado.
-// El recuerdo 3 empieza a rasgar la ambigüedad: insinúa que el "duende"
-// era real, y que pensar en la hermana duele — sin nombrarlo todavía.
 function resolveEventSilbidoA() {
   removeSprite('sprite-perro-noche');
 
   showDialogue(['*silbido*'], () => {
-    // Pequeña pausa de tensión antes de que vuelva
     setTimeout(() => {
       addSprite('sprite-perro-noche', 'assets/sprites/per-01-perro.png', {
         bottom: '18%', right: '28%', height: '180px', position: 'absolute',
         filter: 'brightness(0.6) contrast(1.2)'
       });
-      showDialogue(['Que bien.Volvió corriendo.', '¿Qué estabas viendo eh?', '...', 'Qué noche más rara.'], () => {
+      // Fix: typo "Que bien.Volvió" → "Qué bien. Volvió"
+      showDialogue(['Qué bien. Volvió corriendo.', '¿Qué estabas viendo eh?', '...', 'Qué noche más rara.'], () => {
         removeSprite('sprite-perro-noche');
 
         playGlitch(() => {
@@ -449,9 +434,6 @@ function resolveEventSilbidoA() {
           try { sceneBg.style.backgroundImage = "url('assets/recuerdos/rec-03-sec-bg.jpg')"; } catch(e) {}
           hideArrows();
 
-          // Recuerdo 3: el "duende" guía al niño de noche con silbidos.
-          // Empieza a insinuar que era una persona real.
-          // Pensar en la hermana duele — pero no se nombra directamente.
           showMemoryText([
             'De noche el campo siempre es diferente.',
             'Por algo se dice que no hay que silbar en la noche...',
@@ -471,14 +453,12 @@ function resolveEventSilbidoA() {
             playGlitch(() => {
               unlockMemory(3);
 
-              // Fade a negro → despierta en el living
               fadeToBlack(() => {
                 goToScene('living', 200);
                 setTimeout(() => {
-                  // E3: despierta ~21:00 — listo para E4 de la luz mala
-                  advanceClock(90);
+                  // Fix: setClockTo en vez de advanceClock
+                  setClockTo(22.5);
 
-                  // Reacción al despertar en el living — más asustado que antes
                   showThought('!!!', 900);
                   setTimeout(() => {
                     showDialogue([
@@ -489,29 +469,26 @@ function resolveEventSilbidoA() {
                       '¿Me estoy volviendo loco? Como me voy a quedar dormido sin darme cuenta...',
                       '¿Qué me está pasando?',
                     ], () => {
-                      showThought('Soñé con el duendeotra vez. Con el bosque.', 3000);
+                      // Fix: typo "duendeotra" → "duende otra"
+                      showThought('Soñé con el duende otra vez. Con el bosque.', 3000);
                       setTimeout(() => {
                         showDialogue([
                           'Y con mi hermana.',
                           '...',
                           'Basta. No piense en eso.'
                         ], () => {
-                          // Cuaderno forzado — igual que E1 y E2
                           window._notebookOnClose = () => {
                             showMemoryText([
                               'Ya lo recuerdo.',
                               'Es de esa noche en el claro.',
                             ], () => {
-                              // Igual que E2 lleva al jugador al bosque:
-                              // el personaje dice que tiene que ir al gallinero
-                              // y el evento se dispara al llegar.
                               showDialogue([
                                 '...',
                                 'El foco del gallinero.',
                                 'Todavía no lo cambié.',
-                                '¿Estará todo bien allá afuera?.',
+                                '¿Estará todo bien allá afuera?',
                               ], () => {
-                                goToScene('gallinero', 500);
+                                setTimeout(() => goToScene('gallinero', 400), 100);
                               });
                             });
                           };
@@ -526,13 +503,14 @@ function resolveEventSilbidoA() {
           });
         });
       });
-    }, 900); // pausa de tensión antes de que el perro vuelva
+    }, 900);
   });
 }
 
 // Rama B: dejarlo ir → FALLO
 // El perro se adentra en el bosque. El personaje lo observa irse.
-// Avanzamos el reloj lo suficiente para que E4 se dispare al entrar al living.
+// No hay cuaderno ni recuerdo — pero igual lleva al gallinero
+// con el mismo patrón que rama A para disparar E4.
 function resolveEventSilbidoB() {
   removeSprite('sprite-perro-noche');
   gameState.choices['silbido'] = 'b';
@@ -540,26 +518,24 @@ function resolveEventSilbidoB() {
   showDialogue([
     'Se fue hacia el bosque.',
     '...',
-    'Ya va a volver... Espero que vuelva...',
+    'Ya va a volver... Espero.',
     '...',
-    'Cierto el foco del gallinero. Todavía no lo cambié.',
-    'Quizás debería hacerlo ya que estoy afuera. Aunque quízas está todo bien. Mejor voy a ver.',
+    'Cierto — el foco del gallinero. Todavía no lo cambié.',
+    'Mejor voy a ver cómo está todo mientras estoy afuera.',
   ], () => {
-    advanceClock(90);
-    // Mismo patrón que E2: llevar al jugador a la escena del evento directamente
-    goToScene('gallinero', 500);
+    // setClockTo en vez de advanceClock — el reloj sigue a los eventos
+    setClockTo(22.5);
+    // setTimeout 100ms igual que rama A — garantiza que firedEvents
+    // tiene 'silbido' antes de que el onEnter del gallinero se ejecute
+    setTimeout(() => goToScene('gallinero', 400), 100);
   });
 }
 
 // ══════════════════════════════════════════════════════
-//  EVENTO 4: LA LUZ MALA (22:30)
-//  Trigger: checkEventTriggers() cuando reloj >= 22.5 + silbido fired
-//  + jugador en exterior / gallinero / living
-//
+//  EVENTO 4: LA LUZ MALA
+//  Trigger: onEnter del gallinero cuando silbido está en firedEvents.
 //  El gallinero está oscuro — el foco se quemó.
 //  Es la última tarea de la lista de los abuelos.
-//  La elección decide si el jugador obtiene el recuerdo 4 (y el final real)
-//  o si el gallinero se incendia (final incompleto).
 // ══════════════════════════════════════════════════════
 function triggerEventLuzMala() {
   firedEvents.add('luz-mala');
@@ -642,8 +618,8 @@ function handleFocoInteraction() {
               fadeToBlack(() => {
                 goToScene('habitacion-abajo', 300);
                 setTimeout(() => {
-                  // Ya de madrugada — casi amanecer
-                  advanceClock(180);
+                  // Fix: setClockTo — amanecer ~6:00
+                  setClockTo(6);
 
                   // El personaje está quieto, procesa todo
                   showThought('...', 1200);
@@ -684,7 +660,8 @@ function resolveEventLuzMalaB() {
   showDialogue(['Ya mañana... estoy agotado.'], () => {
     goToScene('habitacion-abajo', 400);
     setTimeout(() => {
-      advanceClock(180);
+      // Fix: setClockTo — amanecer ~6:00
+      setClockTo(6);
       showDialogue(['...'], () => {
         fadeToBlack(() => {
           triggerIncendio();
@@ -881,7 +858,7 @@ function triggerIncendio() {
         'Me fui temprano a la mañana siguiente.',
         'Sin decir mucho.',
       ], () => {
-        advanceClock(60);
+        // Fix: sacar advanceClock — triggerFinalIncompleto no necesita el reloj
         triggerFinalIncompleto();
       });
     });

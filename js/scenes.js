@@ -101,6 +101,26 @@ const SCENES = {
       if (firedEvents.has('silbido')) {
         sceneBg.style.background = 'linear-gradient(135deg, #0e0a1e 0%, #08060e 100%)';
         try { sceneBg.style.backgroundImage = "url('assets/backgrounds/int-02-living-noche.jpg')"; } catch(e) {}
+
+        // Recordatorio del foco — guía al jugador al gallinero.
+        // Solo aparece una vez, la primera vez que entra al living de noche.
+        if (!isInteractionDone('living-recordatorio-gallinero') && !firedEvents.has('luz-mala')) {
+          markInteractionDone('living-recordatorio-gallinero');
+          setTimeout(() => {
+            showThought('...', 800);
+            setTimeout(() => {
+              showDialogue([
+                '...',
+                'Qué hora es.',
+                '...',
+                'El foco del gallinero.',
+                'Todavía no lo cambié.',
+                'Si lo dejo así toda la noche...',
+              ]);
+            }, 900);
+          }, 400);
+        }
+        return;
       }
 
       if (!isInteractionDone('living-entered')) {
